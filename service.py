@@ -1,11 +1,13 @@
 import os, sys
 import hashlib
+import requests
+from io import BytesIO
 from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.requests import Request
 from wechat_sdk import WechatBasic
 from wechat_sdk.messages import TextMessage, ImageMessage
-
+from ocrbot.baidu_ocr import baidu_ocr
 
 token = os.environ.get('WECHAT_TOKEN')
 wc = WechatBasic(token)
@@ -13,7 +15,7 @@ app = FastAPI()
 
 
 @app.get('/')
-async def WeChat(signature: str = Query(...),
+async def verify(signature: str = Query(...),
         timestamp: str = Query(...),
         nonce: str = Query(...),
         echostr: str = Query(...)):
@@ -40,7 +42,10 @@ async def create_wechat(request: Request):
     if isinstance(msg, TextMessage):
         response = wc.response_text('text')
     elif isinstance(msg, ImageMessage):
-        response = wc.response_text('image')
+        print(msg.picurl, msg.media_id)
+        content = requests.get(msg.picurl)
+        result = baidu_ocr(content.content)
+        response = wc.response_text(result)
 
     return response
 

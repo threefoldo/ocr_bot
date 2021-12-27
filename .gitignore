@@ -12,6 +12,7 @@ _tmp*
 tmp*
 tags
 ocrbt
+*.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
